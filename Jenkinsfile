@@ -31,10 +31,14 @@ pipeline {
 
     post {
         success {
-            Write-Host "Deployment completed successfully!"
+            script {
+                echo "Deployment completed successfully!"
+            }
         }
         failure {
-            Write-Host "Deployment failed. Check logs for details."
+            script {
+                echo "Deployment failed. Check logs for details."
+            }
         }
     }
 }
