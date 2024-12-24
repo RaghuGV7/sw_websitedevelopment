@@ -21,10 +21,11 @@ pipeline {
 
         stage('Package Application') {
             steps {
-                powershell '''
-                Write-Host "Packaging application..."
-                Compress-Archive -Path * -DestinationPath website.zip -Force
-                '''
+                script {
+                    echo "Packaging application..."
+                    // Use Groovy's zip method or call shell commands
+                    sh 'zip -r website.zip *'
+                }
             }
         }
     }
