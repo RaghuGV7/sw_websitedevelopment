@@ -19,13 +19,4 @@ pipeline {
             }
         }
     }
-      
-    post {
-        success {
-            Write-Host "Deployment completed successfully!"
-        }
-        failure {
-            Write-Host "Deployment failed. Check logs for details."
-        }
-    }
 }
