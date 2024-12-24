@@ -4,9 +4,9 @@ pipeline {
     environment {
         // Define AWS and Chef paths or variables
         CHEF_HOME = '/home/jenkins/.chef'
-        AWS_REGION = 'ap-south-1'
+        AWS_REGION = 'eu-west-2'
         EC2_USER = 'ubuntu'
-        EC2_HOST = 'ec2-13-201-80-54.ap-south-1.compute.amazonaws.com'
+        EC2_HOST = 'ec2-13-41-159-25.eu-west-2.compute.amazonaws.com'
     }
 
     stages {
@@ -23,8 +23,18 @@ pipeline {
             steps {
                 powershell '''
                 Write-Host "Packaging application..."
+                Compress-Archive -Path * -DestinationPath website.zip -Force
                 '''
             }
+        }
+    }
+
+    post {
+        success {
+            Write-Host "Deployment completed successfully!"
+        }
+        failure {
+            Write-Host "Deployment failed. Check logs for details."
         }
     }
 }
