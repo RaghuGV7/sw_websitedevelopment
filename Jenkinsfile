@@ -18,14 +18,14 @@ pipeline {
                 }
             }
         }
-    }
-    
-    post {
-        success {
-            Write-Host "Deployment completed successfully!"
-        }
-        failure {
-            Write-Host "Deployment failed. Check logs for details."
+
+        stage('Package Application') {
+            steps {
+                powershell '''
+                Write-Host "Packaging application..."
+                Compress-Archive -Path * -DestinationPath website.zip -Force
+                '''
+            }
         }
     }
 }
