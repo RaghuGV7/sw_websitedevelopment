@@ -22,7 +22,7 @@ pipeline {
         stage('Package Application') {
             steps {
                 script {
-                    echo "Packaging application..."
+                    echo 'Packaging application...'
                     // Use Groovy's zip method or call shell commands
                     sh 'zip -r website.zip *'
                 }
@@ -40,21 +40,22 @@ pipeline {
             }
         }
 
-        stage('Deploy with Chef') {
+        stage('Deploy with Chef')
+        {
             steps {
                 sshagent(['aws-ec2-key']) {
                     sh '''
                     echo "Setting up Chef and deploying application..."
                     ssh -o StrictHostKeyChecking=no $EC2_USER@$EC2_HOST "bash -s" <<'EOF'
 
-                    # Install Chef if not present
+                    # Install Chef if not already present
                     if ! command -v chef-client &> /dev/null; then
                         echo "Installing Chef..."
                         curl -L https://omnitruck.chef.io/install.sh | sudo bash
                     fi
-                    
+
                     # Create the required directory structure
-                    mkdir -p /tmp/cookbooks/website/recipes || exit 1
+                    sudo mkdir -p /tmp/cookbooks/website/recipes
                     echo "Cookbook directory created: /tmp/cookbooks/website/recipes"
 
                     # Create the Chef configuration file for local mode
@@ -62,36 +63,35 @@ pipeline {
                     chef_license 'accept'
                     cookbook_path ['/tmp/cookbooks']
                     node_name 'website-deployment'
-                    " | sudo tee /etc/chef/client.rb || exit 1
+                    " | sudo tee /etc/chef/client.rb
 
                     # Create the Chef recipe
                     echo "
                     bash 'unzip_website' do
                         code <<-EOH
                         # Ensure the target directory exists
-                        sudo mkdir -p /var/www/html || exit 1
-                        
+                        sudo mkdir -p /var/www/html
+
                         # Unzip the website.zip file to the target directory
-                        sudo unzip -o /tmp/website.zip -d /var/www/html/ || exit 1
-                        
-                        # Ensure the correct user exists for chown; check for apache or nginx user
-                        if id 'apache' &>/dev/null; then
-                            sudo chown -R apache:apache /var/www/html/
-                        elif id 'nginx' &>/dev/null; then
-                            sudo chown -R nginx:nginx /var/www/html/
+                        sudo apt-get update -y && sudo apt-get install -y unzip
+                        sudo unzip -o /tmp/website.zip -d /var/www/html/
+
+                        # Ensure the correct user exists for chown; use ubuntu as default
+                        if id 'www-data' &>/dev/null; then
+                            sudo chown -R www-data:www-data /var/www/html/
                         else
-                            sudo chown -R ec2-user:ec2-user /var/www/html/
+                            sudo chown -R ubuntu:ubuntu /var/www/html/
                         fi
                         EOH
                     end
-                    " | sudo tee /tmp/cookbooks/website/recipes/default.rb || exit 1
+                    " | sudo tee /tmp/cookbooks/website/recipes/default.rb
 
                     # Log to verify cookbook existence
                     ls -la /tmp/cookbooks/website/recipes
                     echo "Running Chef client in local mode..."
 
                     # Run Chef client in local mode
-                    sudo chef-client --local-mode --runlist 'recipe[website]' -c /etc/chef/client.rb || exit 1
+                    sudo chef-client --local-mode --runlist 'recipe[website]' -c /etc/chef/client.rb
 EOF'''
                 }
             }
@@ -101,12 +101,12 @@ EOF'''
     post {
         success {
             script {
-                echo "Deployment completed successfully!"
+                echo 'Deployment completed successfully!'
             }
         }
         failure {
             script {
-                echo "Deployment failed. Check logs for details."
+                echo 'Deployment failed. Check logs for details.'
             }
         }
     }
