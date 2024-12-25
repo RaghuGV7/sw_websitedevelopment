@@ -6,7 +6,7 @@ pipeline {
         CHEF_HOME = '/home/jenkins/.chef'
         AWS_REGION = 'eu-west-2'
         EC2_USER = 'ubuntu'
-        EC2_HOST = 'ec2-3-9-16-175.eu-west-2.compute.amazonaws.com'
+        EC2_HOST = 'ec2-35-177-252-1.eu-west-2.compute.amazonaws.com'
     }
 
     stages {
