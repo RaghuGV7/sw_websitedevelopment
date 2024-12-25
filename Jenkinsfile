@@ -48,6 +48,10 @@ pipeline {
                     echo "Setting up Chef and deploying application..."
                     ssh -o StrictHostKeyChecking=no $EC2_USER@$EC2_HOST "bash -s" <<'EOF'
 
+                    # Set ownership and permissions
+                    sudo chown -R www-data:www-data /var/www/html/
+                    sudo chmod -R 755 /var/www/html/
+
                     # Install Chef if not already present
                     if ! command -v chef-client &> /dev/null; then
                         echo "Installing Chef..."
@@ -72,8 +76,15 @@ pipeline {
                         # Ensure the target directory exists
                         sudo mkdir -p /var/www/html
 
+                        # Install Apache and unzip
+                        sudo apt-get update -y && sudo apt-get install -y apache2 unzip
+
+                        # Ensure Apache is enabled and running
+                        sudo systemctl enable apache2
+                        sudo systemctl start apache2
+
                         # Unzip the website.zip file to the target directory
-                        sudo apt-get update -y && sudo apt-get install -y unzip
+                        sudo apt-get install -y unzip
                         sudo unzip -o /tmp/website.zip -d /var/www/html/
 
                         # Ensure the correct user exists for chown; use ubuntu as default
